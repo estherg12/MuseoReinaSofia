@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión: Reina Sofía | El Relato de la Vanguardia</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;700;900&display=swap');
+        
+        :root {
+            --museum-bg: #f5f5f4;
+            --museum-accent: #b91c1c;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--museum-bg);
+            color: #1c1917;
+            scroll-behavior: smooth;
+        }
+
+        h2 { font-size: 1.875rem; line-height: 2.25rem; } /* text-3xl en móvil */
+
+        .serif-text {
+            font-family: 'Crimson Pro', serif;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+
+        .mission-card {
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent; /* Evita el recuadro azul al tocar en móvil */
+        }
+
+        .mission-card.locked {
+            opacity: 0.4;
+            filter: grayscale(1);
+            pointer-events: none;
+        }
+
+        .mission-card.completed {
+            border-left: 6px solid #16a34a;
+            background-color: white;
+        }
+
+        .mission-card.active {
+            border-left: 0;
+            border-top: 6px solid var(--museum-accent);
+            background-color: #ffffff;
+            transform: scale(1.02);
+        }
+
+        .check-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            width: 2px;
+            height: 2rem;
+            background: #d6d3d1;
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Nav -->
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-stone-200 py-3 shadow-sm">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="bg-stone-900 text-white font-black px-2 py-1 text-xl">RS</span>
+                <h1 class="text-[10px] font-bold uppercase tracking-tighter text-stone-600 leading-tight w-24 md:w-auto">180 Min. Vanguardia</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="text-right">
+                    <p id="counter-display" class="text-lg font-black text-red-700">0 / 15</p>
+                </div>
+                <div class="w-16 h-1.5 bg-stone-200 rounded-full mt-1 overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-red-700 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-6 py-10 max-w-6xl">
+        
+        <!-- Dashboard Superior -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+                    <h2 class="text-3xl font-black text-stone-900 mb-4 leading-none">Tu Investigación de Campo</h2>
+                    <p class="text-stone-600 text-base leading-relaxed serif-text italic mb-4">
+                        "El arte no es un espejo para reflejar la realidad, sino un martillo para darle forma". 
+                    </p>
+                    <p class="text-stone-600 mt-4 leading-relaxed">
+                        Bienvenido a la misión expandida. Tienes ante ti 15 hitos que narran el convulso siglo XX español. 
+                        Este itinerario ha sido diseñado para completarse en <b>3 horas exactas</b>.
+                    </p>
+                    <div class="mt-8 flex flex-wrap gap-4">
+                        <a href="#mission-start" class="bg-red-700 hover:bg-red-800 text-white px-8 py-3 rounded-full font-bold transition shadow-lg shadow-red-100">Iniciar Operación</a>
+                        <a href="https://recursos.museoreinasofia.es/Visita/plano.pdf" target="_blank" class="bg-red-700 hover:bg-red-800 text-white px-8 py-3 rounded-full font-bold transition shadow-lg flex items-center gap-2">
+                            <span>Ver Planos del Museo</span>
+                        </a>
+                        <div class="hidden sm:flex items-center space-x-2 text-stone-400 text-sm">
+                            <span>📍 Planta 2, Edificio Sabatini</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gymkana Engine -->
+        <section id="mission-start" class="space-y-8 mb-24">
+            <div class="flex items-center space-x-4 mb-8">
+                <div class="h-px bg-stone-300 flex-grow"></div>
+                <h2 class="text-2xl font-black text-stone-800 uppercase tracking-tighter">Itinerario de Misiones</h2>
+                <div class="h-px bg-stone-300 flex-grow"></div>
+            </div>
+
+            <div id="mission-container" class="grid grid-cols-1 gap-6">
+                <!-- Se poblará vía JavaScript -->
+            </div>
+        </section>
+
+        <!-- Nueva Sección: Línea Temporal -->
+        <section class="mt-24 mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-black text-stone-900 uppercase tracking-tighter italic">Línea del Tiempo Artística</h2>
+                <p class="text-stone-500 text-sm mt-2">La evolución cronológica de las obras que has descubierto</p>
+            </div>
+            
+            <div class="relative overflow-x-auto pb-8">
+                <div class="flex min-w-max gap-8 px-4" id="timeline-container">
+                    <!-- Se poblará vía JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Análisis Global -->
+        <section class="mt-24 border-t border-stone-200 pt-16">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h3 class="text-3xl font-black text-stone-900 mb-6">El ADN de la Vanguardia</h3>
+                    <p class="text-stone-600 leading-relaxed mb-6">
+                        A través de estas 15 obras, habrás recorrido el Cubismo analítico, el Surrealismo psicológico, el trauma de la Guerra Civil y la posterior introspección informalista. El museo no es solo una colección de cuadros, sino un archivo vivo de la identidad española.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-white border border-stone-100 rounded-xl shadow-sm">
+                            <p class="text-2xl font-black text-red-700">1937</p>
+                            <p class="text-[10px] text-stone-400 uppercase font-bold">Año Clave</p>
+                        </div>
+                        <div class="p-4 bg-white border border-stone-100 rounded-xl shadow-sm">
+                            <p class="text-2xl font-black text-red-700">65%</p>
+                            <p class="text-[10px] text-stone-400 uppercase font-bold">Obras en P2</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="movementChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nueva Sección: Distribución por Pintor -->
+        <section class="mt-24 border-t border-stone-200 pt-16 mb-20">
+            <!-- KPI Cards -->
+            <section class="grid grid-cols-2 gap-3 md:gap-16">
+                <div class="bg-white overflow-hidden shadow rounded-lg border-t-4 border-red-500 p-3 md:p-5 text-center transform transition duration-300">
+                    <dt class="text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-widest leading-tight">Total de Obras</dt>
+                    <dd class="mt-1 text-2xl md:text-5xl font-extrabold text-gray-800" id="total-works-display">Loading...</dd>
+                    <p class="mt-1 text-[10px] md:text-xs text-gray-400 xs:block">Incluye pintura, escultura, grabado y dibujo.</p>
+                </div>
+                <div class="bg-white overflow-hidden shadow rounded-lg border-t-4 border-gray-700 p-3 md:p-5 text-center transform transition duration-300">
+                    <dt class="text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-widest leading-tight">Total Artistas</dt>
+                    <dd class="mt-1 text-2xl md:text-5xl font-extrabold text-gray-800" id="total-artists-display">Loading...</dd>
+                    <p class="mt-1 text-[10px] md:text-xs text-gray-400 xs:block">Desde finales del s.XIX hasta la actualidad.</p>
+                </div>
+            </section>
+
+            <!-- Main Dashboard: Top 10 Artists -->
+            <section id="dashboard" class="bg-white shadow-lg rounded-xl overflow-hidden gap-16">
+                <div class="p-6 border-b border-gray-100 bg-gray-50">
+                    <h2 class="text-2xl font-bold text-gray-900">Los 10 Artistas Más Representados</h2>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Selecciona un artista de la lista para ver su impacto porcentual en la colección total.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3">
+                    <!-- Left: List of Artists -->
+                    <div class="col-span-1 border-b lg:border-b-0 lg:border-r border-gray-100 max-h-64 lg:max-h-none overflow-y-auto" id="artist-list-container">
+                        <!-- JS will populate this list -->
+                    </div>
+
+                    <!-- Middle/Right: Chart & Detail View -->
+                    <div class="col-span-1 lg:col-span-2 p-4 flex flex-col items-center justify-center relative">
+                        
+                        <!-- Detail Card Overlay (Dynamic) -->
+                        <div id="artist-detail-card" class="mb-4 w-full bg-red-50 border border-red-100 rounded-lg p-4 hidden">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-xl font-bold text-red-800" id="detail-name">Nombre Artista</h3>
+                                    <p class="text-sm text-red-600 mt-1">Obras en catálogo: <span class="font-bold text-lg" id="detail-count">0</span></p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="block text-xs text-red-500 uppercase font-bold">Cuota de Colección</span>
+                                    <span class="text-3xl font-bold text-gray-900" id="detail-percentage">0%</span>
+                                </div>
+                            </div>
+                            <p class="mt-3 text-sm text-gray-700 italic" id="detail-desc">Descripción...</p>
+                        </div>
+
+                        <!-- Chart Container -->
+                        <div class="chart-container">
+                            <canvas id="topArtistsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-100 py-20 mt-20 border-t border-stone-200">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-stone-500 font-bold mb-2">Misión Cultural: Reina Sofía</p>
+            <p class="text-stone-400 text-xs serif-text italic max-w-md mx-auto">
+                "Todo acto de creación es, sobre todo, un acto de destrucción". — Picasso.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const museumData = {
+            totalWorks: 24000,
+            totalArtists: 5800,
+            topArtists: [
+                { name: "Joan Miró", count: 580, desc: "Pintor, escultor y ceramista surrealista. Su gran volumen se debe a importantes donaciones de obra gráfica." },
+                { name: "Pablo Picasso", count: 410, desc: "La figura central del museo. Alberga el Guernica y una vasta colección de dibujos preparatorios." },
+                { name: "Julio González", count: 390, desc: "Pionero de la escultura en hierro. Gran parte de su legado reside aquí gracias a donaciones familiares." },
+                { name: "Salvador Dalí", count: 350, desc: "Icono del surrealismo. El museo posee obras maestras como 'El Gran Masturbador'." },
+                { name: "Antoni Tàpies", count: 240, desc: "Maestro del informalismo y la pintura matérica. Fundamental en la colección de posguerra." },
+                { name: "Eduardo Chillida", count: 160, desc: "Escultor vasco conocido por sus obras monumentales en acero y hormigón." },
+                { name: "Antonio Saura", count: 125, desc: "Fundador del grupo El Paso. Conocido por sus series expresionistas y gestuales." },
+                { name: "Juan Gris", count: 85, desc: "El gran maestro del cubismo sintético. Una colección pequeña pero de altísima calidad." },
+                { name: "Francis Picabia", count: 65, desc: "Figura clave del dadaísmo y el surrealismo, con una obra ecléctica y cambiante." },
+                { name: "Luis Gordillo", count: 60, desc: "P referente de la nueva figuración madrileña y el arte pop en España." }
+            ]
+        };
+
+        let selectedArtistIndex = -1; // No selection initially
+        let mainChartInstance = null;
+        let comparisonChartInstance = null;
+
+        const missions = [
+            { id: 1, year: 1920, artist: "José Gutiérrez Solana", title: "La Tertulia de Pombo", 
+            loc: "Sabatini, P2, Sala 201", 
+            clue: "Busca a un grupo de hombres reunidos alrededor de una mesa.", 
+            answer: "José Gutiérrez Solana, 'La tertulia del Café de Pombo' (1920)", 
+            context: "Durante el siglo XIX y hasta la Guerra Civil, los cafés se consolidaron como instituciones fundamentales en la vida cultural de Madrid por las tertulias que en ellos se realizaban. El más importante fue el Café de Pombo, un antiguo establecimiento de la calle Carretas frecuentado por la vanguardia española a partir de 1915. En la obra aparece Ramón Gómez de la Serna de pie, rodeado de figuras como Manuel Abril, José Bergamín y el propio pintor Solana. La luz de gas y los tonos oscuros acentúan una atmósfera casi fúnebre, reflejando la visión amarga y profunda de la España de la época. Esta pintura actúa como acta fundacional del Madrid intelectual previo al trauma de la contienda civil.", 
+            zone: "Generación de plata" },
+
+            { id: 2, year: 1914, artist: "Juan Gris", title: "La Botella de Anís", 
+            loc: "Sabatini, P2, Sala 204", 
+            clue: "Busca un fragmento de una etiqueta real de 'Anís del Mono'.", 
+            answer: "Juan Gris, 'La botella de anís' (1914)", 
+            context: "Juan Gris es considerado el gran maestro del cubismo sintético y esta obra es un ejemplo supremo de su rigor matemático. En ella, Gris rinde homenaje a los líderes del movimiento mencionando ciudades clave como Badalona, Madrid y París. A diferencia de Picasso, Gris utiliza una estructura arquitectónica muy definida donde los objetos no solo se fragmentan, sino que se reconstruyen mediante rimas visuales. La etiqueta del licor español 'Anís del Mono' sirve como ancla de realidad en una composición de gran complejidad geométrica. Es una pieza que demuestra cómo el cubismo podía ser simultáneamente intelectual, preciso y profundamente decorativo.",
+                zone: "Cubismo" },
+
+            { id: 3, year: 1901, artist: "Pablo Picasso", title: "Mujer en Azul", 
+            loc: "Sabatini, P2, Sala 201", clue: "Una mujer imponente, vestida con un azul vibrante.", 
+            answer: "Pablo Picasso, 'Mujer en azul' (1901)", 
+            context: "Pintada durante la breve estancia de Picasso en Madrid en 1901, esta obra es un puente entre su aprendizaje juvenil y su inminente Época Azul. La figura evoca la estructura de las damas de Velázquez, pero con una ejecución técnica que recuerda a la obra de Toulouse-Lautrec en París. El rostro de la mujer, con un maquillaje excesivo y una expresión de melancolía, sugiere la vida nocturna y la decadencia de la 'Belle Époque'. Fue presentada en la Exposición Nacional de Bellas Artes, recibiendo solo una mención honorífica que frustró profundamente al joven artista. Hoy se entiende como una declaración de intenciones: Picasso ya era capaz de dialogar con la tradición española mientras la subvertía con modernidad.",
+                zone: "Protovanguardia"},
+
+            { id: 4, year: 1922, artist: "Francis Picabia", title: "La Máquina Dadaísta", 
+            loc: "Sabatini, P2, Sala 204", 
+            clue: "Busca un dibujo mecánico que parece un esquema industrial.", 
+            answer: "Francis Picabia, 'Totalizadora' (1922)", 
+            context: "Picabia fue uno de los motores del movimiento Dadá y pasó un tiempo crucial en Barcelona y Madrid, donde editó su revista '391'. En 'Totalizadora', el artista utiliza el lenguaje de los diagramas técnicos para parodiar la fe ciega de la humanidad en el progreso industrial. La obra sugiere que los seres humanos se estaban convirtiendo en engranajes de una maquinaria social absurda y sin propósito. Al despojar al dibujo técnico de su utilidad, Picabia obliga al espectador a cuestionar la lógica y la estética de su tiempo. Es una pieza clave para entender la ruptura total con la belleza académica que propugnaban las vanguardias internacionales.",
+                zone: "Dadaísmo" },
+
+            { id: 5, year: 1925, artist: "Salvador Dalí", title: "Mirando al Mar de Cadaqués", 
+            loc: "Sabatini, P2, Sala 205", clue: "Una joven de espaldas, asomada a una ventana.", 
+            answer: "Salvador Dalí, 'Muchacha en la ventana' (1925)", 
+            context: "Antes de sumergirse en la locura surrealista, Dalí pasó por una etapa de realismo meticuloso y ordenado influenciado por el movimiento italiano 'Valori Plastici'. La modelo es su hermana Ana María, quien fue su musa principal antes de la llegada de Gala a su vida. La composición utiliza la ventana como un marco dentro del cuadro, creando un juego de perspectivas que invita a la contemplación serena. Los tonos azules y la luz mediterránea capturan la esencia del paisaje de Cadaqués, un lugar sagrado para el artista. Esta obra demuestra la asombrosa capacidad técnica de Dalí para captar la realidad física antes de dedicarse a pintar 'fotografías del subconsciente'.",
+                zone: "Realismo" },
+
+            { id: 6, year: 1929, artist: "Salvador Dalí", title: "El Paisaje de la Ansiedad", 
+            loc: "Sabatini, P2, Sala 205", clue: "Una cabeza gigante que se derrite en la playa.", 
+            answer: "Salvador Dalí, 'El gran masturbador' (1929)", 
+            context: "Considerada la culminación del surrealismo daliniano, esta obra es un mapa visual de sus obsesiones y temores más profundos. La figura central es un autorretrato basado en una formación rocosa del Cabo de Creus, que aparece con los ojos cerrados, entregado al sueño o la fantasía. Elementos como el saltamontes (fobia infantil de Dalí), las hormigas (símbolo de putrefacción) y el lirio blanco representan una lucha interna entre el deseo y el miedo. La aparición de un busto femenino cerca de la boca de la cabeza alude a la llegada de Gala, quien catalizó su liberación artística y personal. Es una pieza fundamental para comprender cómo el psicoanálisis de Freud fue traducido al lenguaje pictórico.",
+                zone: "Surrealismo" },
+
+            { id: 7, year: 1929, artist: "Ángeles Santos", title: "El Sueño de Ángeles Santos", 
+            loc: "Sabatini, P2, Sala 207", 
+            clue: "Un cuadro cuadrado inmenso que muestra un planeta habitado por mujeres.", 
+            answer: "Ángeles Santos, 'Un mundo' (1929)", 
+            context: "Ángeles Santos pintó esta obra maestra a los dieciocho años, tras leer una selección de poemas de Juan Ramón Jiménez que despertaron su imaginación cósmica. La pintura rompe con la perspectiva tradicional para mostrar un mundo cúbico donde figuras femeninas tocan instrumentos y encienden estrellas. Su estética mezcla influencias del surrealismo, el expresionismo alemán y el arte de vanguardia que llegaba a cuentagotas a provincias españolas. Fue recibida con asombro en el Salón de Otoño de Madrid, donde intelectuales como García Lorca quedaron fascinados por su audacia. Representa el potencial creativo de las mujeres de la Generación del 27, muchas veces silenciadas por la historia oficial.",
+                zone: "Realismo Mágico"},
+
+            { id: 8, year: 1938, artist: "Joan Miró", title: "La Metamorfosis de Miró", 
+            loc: "Sabatini, P2, Sala 202", 
+            clue: "Un retrato colorido donde un hombre parece formado por manchas.", 
+            answer: "Joan Miró, 'Retrato II' (1938)", 
+            context: "Este retrato de su amigo Enric Cristòfol Ricart marca la transición final de Miró hacia su lenguaje de signos universal. El artista abandona el detalle minucioso de sus etapas anteriores para centrarse en la fuerza del color y la distorsión expresiva. El fondo azul intenso y los trazos negros crean un contraste dramático que parece reflejar la tensión de la Guerra Civil que asolaba España en ese momento. Miró busca aquí la esencia psicológica del retratado más que su parecido físico, utilizando formas que parecen estar en constante movimiento. Es un testimonio de cómo el artista catalán logró simplificar la realidad hasta convertirla en un sistema poético de símbolos.",
+                zone: "Abstracción de signos" },
+
+            { id: 9, year: 1937, artist: "Pablo Picasso", title: "El Grito de la Historia", 
+            loc: "Sabatini, P2, Sala 206", 
+            clue: "Un mural inmenso en blanco y negro.", 
+            answer: "Pablo Picasso, 'Guernica' (1937)",
+            context: "Encargado por el Gobierno de la República para el Pabellón Español de la Exposición Universal de París de 1937, el 'Guernica' es el mayor icono artístico del siglo XX. Picasso utilizó la noticia del bombardeo de la villa vasca por la aviación nazi para crear una alegoría universal contra la barbarie y el dolor humano. Al eliminar el color, el artista otorgó a la obra un carácter fotográfico y documental, similar a los periódicos de la época. Personajes como la madre con el hijo muerto, el caballo herido y el guerrero caído representan el sufrimiento de la población civil. La obra no regresó a España hasta 1981, cumpliendo el deseo de Picasso de que solo volviera cuando se restaurara la democracia.",
+                zone: "Obra Maestra" },
+
+            { id: 10, year: 1933, artist: "Pablo Gargallo", title: "El Profeta en Hierro", 
+            loc: "Sabatini, P2, Sala 206", 
+            clue: "Escultura metálica que parece un dibujo en el aire.", 
+            answer: "Pablo Gargallo, 'El Profeta' (1933)", 
+            context: "Pablo Gargallo revolucionó la escultura al introducir el 'vaciado' y el uso del hierro industrial como materiales nobles. En 'El Profeta', el volumen de la figura no se define por la masa, sino por el aire y el espacio vacío que queda entre las láminas de metal. La figura representa a un orador con el brazo levantado y la boca abierta en un grito eterno, simbolizando la fuerza de la palabra y la profecía. Esta técnica de desmaterialización fue clave para el desarrollo de la escultura moderna, influyendo profundamente en artistas posteriores. La obra combina la robustez del material con una ligereza visual asombrosa, convirtiéndose en un hito del cubismo escultórico.",
+                zone: "Escultura" },
+
+            { id: 11, year: 1927, artist: "Maruja Mallo", title: "La Verbena de la Libertad", 
+            loc: "Sabatini, P2, Sala 205", 
+            clue: "Figuras populares y gigantes en una fiesta caótica.", 
+            answer: "Maruja Mallo, 'La verbena' (1927)", 
+            context: "Maruja Mallo fue una de las figuras más transgresoras de la Generación del 27 y formó parte de las 'Sinsombrero'. En su serie 'La verbena', la artista captura la vitalidad y el surrealismo popular de las fiestas madrileñas con un estilo lleno de colorido y dinamismo. La obra rechaza la visión costumbrista tradicional para ofrecer una mirada moderna, casi cinematográfica, de la masa celebrando. Mallo mezcla elementos mecánicos con figuras fantásticas, creando una atmósfera de libertad y desorden festivo. Estas pinturas son un reflejo del optimismo y la renovación estética que vivía Madrid antes del estallido de la guerra.",
+                zone: "Vanguardia Española" },
+
+            { id: 12, year: 1965, artist: "Antoni Tàpies", title: "La Pared de la Memoria", 
+            loc: "Sabatini, P4, Sala 406", 
+            clue: "Un lienzo que parece un muro real, con arena.", 
+            answer: "Antoni Tàpies, 'Relieve ocre y rosa' (1965)", 
+            context: "Tras la guerra, Antoni Tàpies se convirtió en el máximo exponente del informalismo matérico en España. Para Tàpies, el cuadro no es una ventana al mundo, sino un objeto físico, un muro que acumula el paso del tiempo y las heridas de la historia. El uso de arena, polvo de mármol y pigmentos ocre evoca la tierra de Castilla y la sobriedad del monasterio de El Escorial. La cruz que suele aparecer en sus obras no es solo un símbolo religioso, sino una marca de identidad y una firma del hombre sobre la materia. Esta obra representa el silencio y la resistencia espiritual durante los años más grises de la dictadura española.",
+                zone: "Informalismo" },
+
+            { id: 13, year: 1956, artist: "Antonio Saura", title: "El Grito de Lola", 
+            loc: "Sabatini, P4, Sala 408", 
+            clue: "Retrato femenino distorsionado por brochazos negros.", 
+            answer: "Antonio Saura, 'Lola' (1956)", 
+            context: "Antonio Saura, miembro fundador del grupo 'El Paso', utilizó el gesto violento y la ausencia de color para expresar la angustia existencial. Su serie de retratos 'Lola' toma como base la figura femenina para someterla a una destrucción pictórica que busca liberar la energía del artista. Influenciado por las 'Pinturas Negras' de Goya, Saura rechaza la belleza complaciente para mostrar el monstruo que habita en el interior del ser humano. El uso radical del blanco y negro refleja una España aislada y tensa, donde la pintura se convierte en un acto de catarsis política y personal. Es una de las cumbres del expresionismo abstracto europeo.",
+                zone: "El Paso" },
+
+            { id: 14, year: 1986, artist: "Richard Serra", title: "Esculpir el Acero", 
+            loc: "Edificio Nouvel, Patio", 
+            clue: "Dos bloques inmensos de acero que parecen flotar.", 
+            answer: "Richard Serra, 'Equal-Parallel: Guernica-Bengasi' (1986)", 
+            context: "Esta instalación monumental de Richard Serra es un hito del minimalismo que juega con la percepción del peso y el espacio del espectador. La obra fue encargada específicamente para el museo y establece un diálogo conceptual con el 'Guernica' de Picasso a través de su título. Al caminar entre los bloques de acero macizo, el visitante experimenta una sensación física de opresión y equilibrio que invita a la reflexión sobre el poder y la violencia. Serra utiliza materiales industriales para crear una experiencia sensorial pura, despojada de cualquier adorno decorativo. La obra es famosa también por su historia: la pieza original desapareció de los almacenes y tuvo que ser replicada por el artista años después.",
+                zone: "Minimalismo" },
+
+            { id: 15, year: 2005, artist: "Jean Nouvel", title: "La Luz de Nouvel", 
+            loc: "Exterior / Terraza Nouvel", 
+            clue: "Un techo rojo gigante que vuela sobre los edificios.", 
+            answer: "Jean Nouvel, 'Ampliación del Museo' (2005)", 
+            context: "El arquitecto francés Jean Nouvel diseñó esta ampliación para transformar el antiguo hospital en un complejo artístico del siglo XXI. El gran elemento unificador es la techumbre de color rojo brillante realizada en aluminio y fibra de vidrio, que protege el nuevo patio público. Sus superficies reflectantes capturan la luz de Madrid y el movimiento de la ciudad, integrando el museo con el barrio de Lavapiés. Los tres nuevos edificios (biblioteca, auditorio y salas de exposiciones) rodean una plaza central que funciona como un 'salón urbano'. Es la parada final de tu misión: el lugar donde la historia de las salas se encuentra con la vida contemporánea de la calle.",
+                zone: "Arquitectura" }
+        ];
+
+        let completed = [];
+
+        function toggleMission(id) {
+            const index = missions.findIndex(m => m.id === id);
+            if (completed.includes(id)) {
+                completed = completed.filter(cId => {
+                    const cIndex = missions.findIndex(m => m.id === cId);
+                    return cIndex < index;
+                });
+            } else {
+                completed.push(id);
+            }
+            renderMissions();
+            updateProgress();
+            renderTimeline();
+        }
+
+        function renderMissions() {
+            const container = document.getElementById('mission-container');
+            container.innerHTML = '';
+            missions.forEach((m, idx) => {
+                const isCompleted = completed.includes(m.id);
+                const isAvailable = idx === 0 || completed.includes(missions[idx-1].id);
+                const card = document.createElement('div');
+                card.className = `mission-card p-3 rounded-2xl border ${isAvailable ? (isCompleted ? 'completed' : 'active') : 'locked'}`;
+                card.innerHTML = `
+                    <div class="flex flex-col gap-3">
+                        <div class="flex justify-between items-center border-b border-stone-100 pb-4">
+                            <div>
+                                <div class="text-[10px] font-black text-stone-400 uppercase tracking-widest">Misión ${idx + 1}</div>
+                                <h3 class="text-lg font-black text-stone-800 leading-tight">${m.title}</h3>
+                            </div>
+                            <div onclick="toggleMission(${m.id})" class="check-btn flex-shrink-0 ${isCompleted ? 'bg-green-600 text-white shadow-inner' : 'bg-stone-200 text-stone-400'}">
+                                ${isCompleted ? '✓' : '+'}
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-bold bg-red-50 text-red-700 px-2 py-1 rounded-full uppercase">${m.loc}</span>
+                            </div>
+                            <p class="text-stone-600 italic text-sm leading-snug">"${m.clue}"</p>
+                            
+                            <div class="${isCompleted ? 'block' : 'hidden'} mt-4 bg-stone-50 p-4 rounded-xl border border-stone-100 animate-fade-in">
+                                <h4 class="text-[11px] font-black text-red-700 uppercase mb-2">Hallazgo: ${m.answer}</h4>
+                                <p class="serif-text text-stone-700 leading-relaxed text-sm">${m.context}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            container.innerHTML = '';
+            // Ordenar por año para la línea temporal
+            const sorted = [...missions].sort((a, b) => a.year - b.year);
+            
+            sorted.forEach(m => {
+                const isFound = completed.includes(m.id);
+                const item = document.createElement('div');
+                item.className = `flex flex-col items-center text-center p-4 min-w-[140px] transition-all duration-700 ${isFound ? 'opacity-100 scale-100' : 'opacity-30 scale-95 grayscale'}`;
+                item.innerHTML = `
+                    <div class="text-2xl font-black ${isFound ? 'text-red-700' : 'text-stone-400'} mb-2">${m.year}</div>
+                    <div class="w-4 h-4 rounded-full ${isFound ? 'bg-red-700' : 'bg-stone-300'} mb-4 ring-4 ring-white shadow-sm"></div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-stone-500 leading-tight">${m.title}</div>
+                    <div class="text-[9px] text-stone-400 mt-1 italic">${m.artist}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function animateKPIs() {
+            animateValue("total-works-display", 0, museumData.totalWorks, 2000);
+            animateValue("total-artists-display", 0, museumData.totalArtists, 2000);
+        }
+
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString('es-ES');
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        function calculatePercentage(count) {
+            return ((count / museumData.totalWorks) * 100).toFixed(3);
+        }
+
+        function renderArtistList() {
+            const container = document.getElementById('artist-list-container');
+            container.innerHTML = ''; // Clear
+
+            museumData.topArtists.forEach((artist, index) => {
+                const item = document.createElement('div');
+                item.className = `p-4 border-b border-gray-100 cursor-pointer transition-colors duration-200 hover:bg-gray-50 flex justify-between items-center group`;
+                item.id = `artist-item-${index}`;
+                item.onclick = () => selectArtist(index);
+
+                item.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="h-8 w-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-bold mr-3 group-hover:bg-red-200 group-hover:text-red-900">
+                            ${index + 1}
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800">${artist.name}</p>
+                            <p class="text-xs text-gray-500">${artist.count} obras</p>
+                        </div>
+                    </div>
+                    <div class="text-gray-300">
+                        <span class="text-xl">›</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateProgress() {
+            const current = completed.length;
+            const percent = (current / missions.length) * 100;
+            document.getElementById('counter-display').innerText = `${current} / ${missions.length}`;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+        }
+
+        function selectArtist(index) {
+            // Remove active class from all
+            for (let i = 0; i < museumData.topArtists.length; i++) {
+                const el = document.getElementById(`artist-item-${i}`);
+                if (el) el.classList.remove('active-artist');
+            }
+
+            // Add active class to selected
+            const selectedEl = document.getElementById(`artist-item-${index}`);
+            if (selectedEl) selectedEl.classList.add('active-artist');
+
+            selectedArtistIndex = index;
+            updateDetailCard(index);
+            highlightChartSegment(index);
+        }
+
+        function updateDetailCard(index) {
+            const artist = museumData.topArtists[index];
+            const card = document.getElementById('artist-detail-card');
+            
+            // Populate data
+            document.getElementById('detail-name').innerText = artist.name;
+            document.getElementById('detail-count').innerText = artist.count;
+            document.getElementById('detail-desc').innerText = artist.desc;
+            document.getElementById('detail-percentage').innerText = calculatePercentage(artist.count) + '%';
+
+            // Show card with fade in
+            card.classList.remove('hidden');
+            card.classList.add('animate-fade-in-up');
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initCharts() {
+            // Chart 2: Movement
+            const ctxMov = document.getElementById('movementChart').getContext('2d');
+            new Chart(ctxMov, {
+                type: 'bar',
+                data: {
+                    labels: ['Sabatini P2', 'Sabatini P4', 'Nouvel'],
+                    datasets: [{ label: 'Densidad de Obras Clave', 
+                    data: [11, 2, 2], backgroundColor: '#1c1917', borderRadius: 8 }]
+                },
+                options: { responsive: true, 
+                maintainAspectRatio: false, 
+                scales: { y: { display: false }, x: { grid: { display: false } } }, 
+                plugins: { legend: { display: false } } }
+            });
+
+            // Nuevo Chart 3: Distribución por Pintor
+            const ctx1 = document.getElementById('topArtistsChart').getContext('2d');
+            const chartLabels = museumData.topArtists.map(a => a.name);
+            const chartData = museumData.topArtists.map(a => a.count);
+
+            mainChartInstance = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: [
+                            '#C01111', '#F26969', '#fca5a5', '#fee2e2', 
+                            '#374151', '#4b5563', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb'
+                        ],
+                        borderWidth: 1,
+                        borderColor: '#ffffff',
+                        hoverOffset: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '30%',
+                    plugins: {
+                        legend: {
+                            display: false // Hide default legend to use our custom list
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#111',
+                            bodyColor: '#333',
+                            borderColor: '#e5e7eb',
+                            borderWidth: 1,
+                            padding: 18,
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.raw;
+                                    const total = context.chart._metasets[context.datasetIndex].total;
+                                    const percentage = ((val / total) * 100).toFixed(1) + '%';
+                                    return ` ${val} Obras (${percentage} del Top 10)`;
+                                }
+                            }
+                        }
+                    },
+                    onClick: (e, elements) => {
+                        if (elements.length > 0) {
+                            selectArtist(elements[0].index);
+                        }
+                    }
+                }
+            });
+        }
+
+        function highlightChartSegment(index) {
+            if (!mainChartInstance) return;
+            
+            // Chart.js doesn't have a persistent "highlight" state API easily accessible,
+            // but we can simulate it by manipulating dataset colors or triggering tooltip.
+            // Here we trigger the tooltip programmatically.
+            
+            const chart = mainChartInstance;
+            chart.setActiveElements([
+                { datasetIndex: 0, index: index }
+            ]);
+            chart.tooltip.setActiveElements([
+                { datasetIndex: 0, index: index }
+            ]);
+            chart.update();
+        }
+
+        window.onload = () => {
+            animateKPIs();
+            renderArtistList();
+            renderMissions();
+            renderTimeline();
+            initCharts();
+        };
+    </script>
+</body>
+</html>
